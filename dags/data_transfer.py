@@ -1,6 +1,7 @@
 from airflow.models import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python_operator import PythonOperator
+from airflow.models import Variable
 from datetime import datetime, timedelta
 
 from scripts.amplitude_to_s3_upload import (
@@ -18,9 +19,9 @@ def download_s3_data():
     download_to_mongo()
 
 default_args = {
-    'owner': 'Lydia',
-    'start_date': datetime(2021, 5, 7),
-    'email': 'some@mail.com',
+    'owner': Variable.get('owner'),
+    'start_date': datetime.today(),
+    'email': Variable.get('email'),
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 1,
@@ -28,7 +29,7 @@ default_args = {
 }
 
 data_transfer_dag = DAG(
-    dag_id='prepare_data_dag',
+    dag_id='data_transfer_dag',
     default_args=default_args,
     schedule_interval='@daily'
 )
