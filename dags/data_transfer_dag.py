@@ -1,28 +1,21 @@
-import os
-import sys
-from airflow.models import Variable
-
 from airflow.models import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
 from datetime import datetime, timedelta
 
-# from scripts import (
-#     upload_to_s3,
-#     download_to_mongo
-# )
+from scripts.amplitude_to_s3_upload import (
+    upload_to_s3
+)
 
-config_vars = Variable.get('config_vars', deserialize_json=True)
-S3_BUCKET_NAME = config_vars['S3_BUCKET_NAME']
+from scripts.s3_to_mongo_download import (
+    download_to_mongo
+)
 
 def upload_amplitude_data():
-    # upload_to_s3()
-    pass
+    upload_to_s3()
 
 def download_s3_data():
-    # download_to_mongo()
-    pass
+    download_to_mongo()
 
 default_args = {
     'owner': 'Lydia',
@@ -40,30 +33,16 @@ data_transfer_dag = DAG(
     schedule_interval='@daily'
 )
 
-t1 = BashOperator(
-    task_id='t1',
-    bash_command=f'echo {config_vars}',
+upload_amplitude_data_task = PythonOperator(
+    task_id='upload_amplitude_data',
+    python_callable=upload_amplitude_data,
     dag=data_transfer_dag
 )
 
-t2 = BashOperator(
-    task_id='t2',
-    bash_command='echo {{var.json.config_vars.S3_BUCKET_NAME}}',
+download_s3_data_task = PythonOperator(
+    task_id='download_s3_data',
+    python_callable=download_s3_data,
     dag=data_transfer_dag
 )
 
-t1 >> t2
-
-# upload_amplitude_data_task = PythonOperator(
-#     task_id='upload_amplitude_data',
-#     python_callable=upload_amplitude_data,
-#     dag=data_transfer_dag
-# )
-
-# download_s3_data_task = PythonOperator(
-#     task_id='download_s3_data',
-#     python_callable=download_s3_data,
-#     dag=data_transfer_dag
-# )
-
-# upload_amplitude_data_task >> download_s3_data_task
+upload_amplitude_data_task >> download_s3_data_task

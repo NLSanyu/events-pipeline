@@ -10,6 +10,8 @@ from decouple import config
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
+from airflow.models import Variable
+
 # Disable 'setting with copy' warning
 pd.options.mode.chained_assignment = None
 
@@ -23,9 +25,11 @@ PRODUCTION_DOMAINS = ['studio.masterwizr.com', 'stream.masterwizr.com']
 client = boto3.client('s3')
 session = boto3.session.Session()
 
+config_vars = Variable.get('config_vars', deserialize_json=True)
+
 def download_to_mongo():
-    bucket = config('S3_BUCKET_NAME')
-    amplitude_data_path = config('DATA_PATH')
+    bucket = config_vars['S3_BUCKET_NAME']
+    amplitude_data_path = config_vars['DATA_PATH']
     folder = 'amplitude/'
     date_today = get_today_date()
     path = f'{folder}{amplitude_data_path}_{date_today}' # fetch objects from current day
@@ -114,8 +118,8 @@ def create_domain(df):
     return df
 
 def upload_to_mongo(df, collection_name):
-    user = config('MONGO_USER')
-    password = config('MONGO_PASSWORD')
+    user = config_vars['MONGO_USER']
+    password = config_vars['MONGO_PASSWORD']
     try:
         client = pymongo.MongoClient(f'mongodb+srv://{user}:{password}@cluster0.yhpvw.mongodb.net/masterwizr-data-db?retryWrites=true&w=majority')
         db = client['masterwizr-data-db']
