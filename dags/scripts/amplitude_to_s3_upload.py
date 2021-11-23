@@ -16,7 +16,7 @@ from airflow.models import Variable
 
 config_vars = Variable.get('config_vars', deserialize_json=True)
 
-project_id = config_vars['DATA_PATH']
+project_id = config('DATA_PATH')
 base_path = '/tmp/amplitude_data/'
 project_directory = base_path + project_id
 extracted_json_data = base_path + 'extracted/'

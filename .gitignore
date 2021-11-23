@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
 
 # Distribution / packaging
 .Python
@@ -23,6 +24,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Airflow stuff
+logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints

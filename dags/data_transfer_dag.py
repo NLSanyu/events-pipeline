@@ -12,11 +12,18 @@ from scripts.s3_to_mongo_download import (
     download_to_mongo
 )
 
+from scripts.mongo_to_postgres_transfer import (
+    mongo_to_postgres
+)
+
 def upload_amplitude_data():
     upload_to_s3()
 
 def download_s3_data():
     download_to_mongo()
+
+def transfer_mongo_data():
+    mongo_to_postgres()
 
 default_args = {
     'owner': Variable.get('owner'),
@@ -46,4 +53,10 @@ download_s3_data_task = PythonOperator(
     dag=data_transfer_dag
 )
 
-upload_amplitude_data_task >> download_s3_data_task
+transfer_mongo_data_task = PythonOperator(
+    task_id='transfer_mongo_data',
+    python_callable=transfer_mongo_data,
+    dag=data_transfer_dag
+)
+
+upload_amplitude_data_task >> download_s3_data_task >> transfer_mongo_data_task
